@@ -5,6 +5,7 @@ COPY ${JAR_FILE} application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 FROM amazoncorretto:11-alpine
+LABEL mantainer=jorgebo10@gmail.com
 EXPOSE 8080
 EXPOSE 9010
 WORKDIR /application
