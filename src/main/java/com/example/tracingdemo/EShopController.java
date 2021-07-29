@@ -3,7 +3,7 @@ package com.example.tracingdemo;
 import com.example.tracingdemo.services.BillingService;
 import com.example.tracingdemo.services.DeliveryService;
 import com.example.tracingdemo.services.InventoryService;
-import io.opentracing.Span;
+import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,15 +28,11 @@ public class EShopController {
 
     @GetMapping("/checkout")
     public String checkout() {
-        Span span = tracer.buildSpan("checkout").start();
-
-        inventoryService.createOrder(span);
-        billingService.payment(span);
-        deliveryService.arrangeDelivery(span);
-        String msg = "You have successfully checked out your shopping cart";
-
-        span.finish();
-
-        return msg;
+        try (Scope ignored = tracer.buildSpan("checkout").startActive(true)) {
+            inventoryService.createOrder();
+            billingService.payment();
+            deliveryService.arrangeDelivery();
+            return "You have successfully checked out your shopping cart";
+        }
     }
 }

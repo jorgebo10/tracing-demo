@@ -1,6 +1,6 @@
 package com.example.tracingdemo.services;
 
-import io.opentracing.Span;
+import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,14 +14,11 @@ public class InventoryService {
         this.tracer = tracer;
     }
 
-    public void createOrder(Span parentSpan) {
-        Span span = tracer.buildSpan("createOrder").asChildOf(parentSpan).start();
-        try {
+    public void createOrder() {
+        try (Scope ignored = tracer.buildSpan("createOrder").startActive(true)) {
             Thread.sleep(20);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            span.finish();
         }
     }
 }

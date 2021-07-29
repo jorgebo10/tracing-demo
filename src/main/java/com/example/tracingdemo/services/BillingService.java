@@ -1,6 +1,6 @@
 package com.example.tracingdemo.services;
 
-import io.opentracing.Span;
+import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,14 +14,11 @@ public class BillingService {
         this.tracer = tracer;
     }
 
-    public void payment(Span parentSpan) {
-        Span span = tracer.buildSpan("payment").asChildOf(parentSpan).start();
-        try {
+    public void payment() {
+        try (Scope scope = tracer.buildSpan("payment").startActive(true)) {
             Thread.sleep(30);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            span.finish();
         }
     }
 }

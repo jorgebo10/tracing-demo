@@ -1,7 +1,7 @@
 package com.example.tracingdemo.services;
 
 
-import io.opentracing.Span;
+import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +17,9 @@ public class DeliveryService {
         this.tracer = tracer;
     }
 
-    public void arrangeDelivery(Span parentSpan) {
-        Span span = tracer.buildSpan("arrangeDelivery").asChildOf(parentSpan).start();
-        logisticsService.transport(span);
-        span.finish();
+    public void arrangeDelivery() {
+        try (Scope ignored = tracer.buildSpan("arrangeDelivery").startActive(true)) {
+            logisticsService.transport();
+        }
     }
 }
