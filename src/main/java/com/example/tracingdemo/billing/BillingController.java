@@ -1,19 +1,21 @@
-package com.example.tracingdemo.services;
+package com.example.tracingdemo.billing;
 
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Service
-public class BillingService {
+@RestController
+public class BillingController {
     private final Tracer tracer;
 
     @Autowired
-    public BillingService(Tracer tracer) {
+    public BillingController(Tracer tracer) {
         this.tracer = tracer;
     }
 
+    @RequestMapping("/payment")
     public void payment() {
         try (Scope scope = tracer.buildSpan("payment").startActive(true)) {
             Thread.sleep(30);

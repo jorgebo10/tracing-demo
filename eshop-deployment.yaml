@@ -1,0 +1,213 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+spec:
+  ports:
+    - port: 14268  #https://www.jaegertracing.io/docs/1.24/apis/#thrift-over-http-stable
+      name: jaeger-collector
+    - port: 16686
+      name: jaeger-ui
+  selector:
+    app: jaeger
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+        - name: jaeger
+          image: jaegertracing/all-in-one:latest
+          ports:
+            - containerPort: 14268 #jaeger-collector
+            - containerPort: 16686 #jaeger-query
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eshop
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: eshop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eshop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eshop
+  template:
+    metadata:
+      labels:
+        app: eshop
+    spec:
+      containers:
+        - name: eshop
+          image: jorgebo10/tracing-demo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger:14268/api/traces"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: billing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing
+  template:
+    metadata:
+      labels:
+        app: billing
+    spec:
+      containers:
+        - name: billing
+          image: jorgebo10/tracing-demo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger:14268/api/traces"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: delivery
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery
+  template:
+    metadata:
+      labels:
+        app: delivery
+    spec:
+      containers:
+        - name: delivery
+          image: jorgebo10/tracing-demo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger:14268/api/traces"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: inventory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+  template:
+    metadata:
+      labels:
+        app: inventory
+    spec:
+      containers:
+        - name: inventory
+          image: jorgebo10/tracing-demo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger:14268/api/traces"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logistics
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: logistics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logistics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logistics
+  template:
+    metadata:
+      labels:
+        app: logistics
+    spec:
+      containers:
+        - name: logistics
+          image: jorgebo10/tracing-demo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger:14268/api/traces"
