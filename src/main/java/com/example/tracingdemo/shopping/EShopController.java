@@ -2,12 +2,12 @@ package com.example.tracingdemo.shopping;
 
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,23 +17,19 @@ import java.util.Map;
 import static com.example.tracingdemo.Helper.injectHeaders;
 
 @RestController
+@RequiredArgsConstructor
 public class EShopController {
     private final Tracer tracer;
     private final RestTemplate restTemplate;
 
-    @Autowired
-    public EShopController(Tracer tracer, RestTemplateBuilder restTemplateBuilder) {
-        this.tracer = tracer;
-        this.restTemplate = restTemplateBuilder.build();
-    }
-
     @GetMapping("/checkout")
-    public String checkout() {
+    public String checkout(@RequestHeader("user") String user) {
         try (Scope ignored = tracer.buildSpan("checkout").startActive(true)) {
-            Map<String, String> headers = new HashMap<>();
-            injectHeaders(tracer, tracer.activeSpan().context(), headers);
+            tracer.activeSpan().setBaggageItem("user", user);
+            Map<String, String> headersMap = new HashMap<>();
+            injectHeaders(tracer, tracer.activeSpan().context(), headersMap);
             final HttpHeaders httpHeaders = new HttpHeaders();
-            headers.forEach(httpHeaders::set);
+            headersMap.forEach(httpHeaders::set);
             HttpEntity<String> entity = new HttpEntity<>("body", httpHeaders);
             restTemplate.exchange("http://inventory:8080/createOrder", HttpMethod.POST, entity, Void.class);
             restTemplate.exchange("http://billing:8080/payment", HttpMethod.POST, entity, Void.class);

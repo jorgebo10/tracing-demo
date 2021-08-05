@@ -3,6 +3,8 @@ package com.example.tracingdemo.delivery;
 
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -23,6 +25,7 @@ import static com.example.tracingdemo.Helper.injectHeaders;
 public class DeliveryController {
     private final RestTemplate restTemplate;
     private final Tracer tracer;
+    private final Log log = LogFactory.getLog(DeliveryController.class);
 
     @Autowired
     public DeliveryController(Tracer tracer, RestTemplateBuilder restTemplateBuilder) {
@@ -33,6 +36,7 @@ public class DeliveryController {
     @RequestMapping("/arrangeDelivery")
     public void arrangeDelivery(@RequestHeader Map<String, String> headers) {
         try (Scope scope = getScopeFromHeaders(tracer, headers, "arrangeDelivery")) {
+            log.info(String.format("User: %s", tracer.activeSpan().getBaggageItem("user")));
             Map<String, String> headers2 = new HashMap<>();
             injectHeaders(tracer, tracer.activeSpan().context(), headers2);
             final HttpHeaders httpHeaders = new HttpHeaders();
