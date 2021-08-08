@@ -1,45 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: jaeger
-spec:
-  ports:
-    - port: 14268  #https://www.jaegertracing.io/docs/1.24/apis/#thrift-over-http-stable
-      name: jaeger-collector
-    - port: 16686
-      name: jaeger-ui
-  selector:
-    app: jaeger
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: jaeger
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: jaeger
-  template:
-    metadata:
-      labels:
-        app: jaeger
-    spec:
-      containers:
-        - name: jaeger
-          image: jaegertracing/all-in-one:latest
-          ports:
-            - containerPort: 14268 #jaeger-collector
-            - containerPort: 16686 #jaeger-query
----
-apiVersion: v1
-kind: Service
-metadata:
+  labels:
+    app: eshop
   name: eshop
 spec:
   ports:
     - port: 8080
       targetPort: 8080
+      name: http-eshop
       protocol: TCP
   selector:
     app: eshop
@@ -47,6 +16,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: eshop
+    version: v1
   name: eshop
 spec:
   replicas: 1
@@ -60,22 +32,22 @@ spec:
     spec:
       containers:
         - name: eshop
-          image: jorgebo10/tracing-demo:1.1.1
+          image: jorgebo10/tracing-demo:1.1.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          env:
-            - name: JAEGER_ENDPOINT
-              value: "http://jaeger:14268/api/traces"
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: billing
   name: billing
 spec:
   ports:
     - port: 8080
       targetPort: 8080
+      name: http-billing
       protocol: TCP
   selector:
     app: billing
@@ -83,6 +55,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: billing
+    version: v1
   name: billing
 spec:
   replicas: 1
@@ -96,22 +71,22 @@ spec:
     spec:
       containers:
         - name: billing
-          image: jorgebo10/tracing-demo:1.1.1
+          image: jorgebo10/tracing-demo:1.1.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          env:
-            - name: JAEGER_ENDPOINT
-              value: "http://jaeger:14268/api/traces"
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: delivery
   name: delivery
 spec:
   ports:
     - port: 8080
       targetPort: 8080
+      name: http-delivery
       protocol: TCP
   selector:
     app: delivery
@@ -119,6 +94,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: delivery
   name: delivery
 spec:
   replicas: 1
@@ -132,22 +109,22 @@ spec:
     spec:
       containers:
         - name: delivery
-          image: jorgebo10/tracing-demo:1.1.1
+          image: jorgebo10/tracing-demo:1.1.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          env:
-            - name: JAEGER_ENDPOINT
-              value: "http://jaeger:14268/api/traces"
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: inventory
   name: inventory
 spec:
   ports:
     - port: 8080
       targetPort: 8080
+      name: http-inventory
       protocol: TCP
   selector:
     app: inventory
@@ -155,6 +132,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: inventory
+    version: v1
   name: inventory
 spec:
   replicas: 1
@@ -168,22 +148,22 @@ spec:
     spec:
       containers:
         - name: inventory
-          image: jorgebo10/tracing-demo:1.1.1
+          image: jorgebo10/tracing-demo:1.1.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          env:
-            - name: JAEGER_ENDPOINT
-              value: "http://jaeger:14268/api/traces"
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app: logistics
   name: logistics
 spec:
   ports:
     - port: 8080
       targetPort: 8080
+      name: http-logistics
       protocol: TCP
   selector:
     app: logistics
@@ -191,6 +171,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: logistics
+    version: v1
   name: logistics
 spec:
   replicas: 1
@@ -204,10 +187,41 @@ spec:
     spec:
       containers:
         - name: logistics
-          image: jorgebo10/tracing-demo:1.1.1
+          image: jorgebo10/tracing-demo:1.1.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          env:
-            - name: JAEGER_ENDPOINT
-              value: "http://jaeger:14268/api/traces"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: eshop-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: eshop
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - eshop-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: eshop
+            port:
+              number: 8080
