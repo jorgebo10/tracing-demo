@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: eshop
-          image: jorgebo10/tracing-demo:1.1.4
+          image: jorgebo10/tracing-demo:1.1.5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
         - name: billing
-          image: jorgebo10/tracing-demo:1.1.4
+          image: jorgebo10/tracing-demo:1.1.5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -115,7 +115,7 @@ spec:
     spec:
       containers:
         - name: delivery
-          image: jorgebo10/tracing-demo:1.1.4
+          image: jorgebo10/tracing-demo:1.1.5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -156,7 +156,7 @@ spec:
     spec:
       containers:
         - name: inventory
-          image: jorgebo10/tracing-demo:1.1.4
+          image: jorgebo10/tracing-demo:1.1.5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -197,7 +197,7 @@ spec:
     spec:
       containers:
         - name: logistics
-          image: jorgebo10/tracing-demo:1.1.4
+          image: jorgebo10/tracing-demo:1.1.5
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
